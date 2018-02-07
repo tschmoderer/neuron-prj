@@ -11,9 +11,10 @@ close all
 % images = loadMNISTImages('data/train-images.idx3-ubyte');
 % labels = loadMNISTLabels('data/train-labels.idx1-ubyte');
 
-Nb_training = 10;
+Nb_training = 100;
+learning_rate = 0.05;
 batch_size  = 100;
-niter = 1000;
+niter = 10;
 
 training = randi([1 max(size(images))],1,Nb_training);
 sigmoid  = @(x) 1./(1+exp(-x));
@@ -95,15 +96,15 @@ for n = 1:niter
         end            
     end
     
-    w3 = w3 - mean(dCdw3,3); b3 = b3 - mean(dCdb3,3);
-    w2 = w2 - mean(dCdw2,3); b2 = b2 - mean(dCdb2,3);
-    w1 = w1 - mean(dCdw1,3); b1 = b1 - mean(dCdb1,3);
+    w3 = w3 - learning_rate*mean(dCdw3,3); b3 = b3 - learning_rate*mean(dCdb3,3);
+    w2 = w2 - learning_rate*mean(dCdw2,3); b2 = b2 - learning_rate*mean(dCdb2,3);
+    w1 = w1 - learning_rate*mean(dCdw1,3); b1 = b1 - learning_rate*mean(dCdb1,3);
     
     [n mean(cost)]
 end
 
-% tests       = loadMNISTImages('data/t10k-images.idx3-ubyte');
-% test_labels = loadMNISTLabels('data/t10k-labels.idx1-ubyte');
+tests       = loadMNISTImages('data/t10k-images.idx3-ubyte');
+test_labels = loadMNISTLabels('data/t10k-labels.idx1-ubyte');
 
 Nb_test = 1000; 
 test = randi([1 max(size(tests))],1,Nb_test);
