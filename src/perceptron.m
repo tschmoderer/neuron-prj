@@ -8,13 +8,13 @@ clc
 % clear all
 close all  
 
-% images = loadMNISTImages('data/train-images.idx3-ubyte');
-% labels = loadMNISTLabels('data/train-labels.idx1-ubyte');
+images = loadMNISTImages('data/train-images.idx3-ubyte');
+labels = loadMNISTLabels('data/train-labels.idx1-ubyte');
 
 Nb_training = 100;
-learning_rate = 0.05;
+learning_rate = 5;
 batch_size  = 100;
-niter = 10;
+niter = 200;
 
 training = randi([1 max(size(images))],1,Nb_training);
 sigmoid  = @(x) 1./(1+exp(-x));
@@ -23,9 +23,9 @@ dsigmoid = @(x) exp(-x)./(exp(-x) + 1).^2;
 reference = zeros(10,1);
 % Couches          % Poids            % Biais          % Intermédiaire  
 a0 = zeros(784,1); 
-a1 = zeros(16,1);  w1 = rand(16,784); b1 = rand(16,1); z1 = zeros(16,1);
-a2 = zeros(16,1);  w2 = rand(16,16);  b2 = rand(16,1); z2 = zeros(16,1);
-a3 = zeros(10,1);  w3 = rand(10,16);  b3 = rand(10,1); z3 = zeros(10,1);
+a1 = zeros(16,1);  w1 = zeros(16,784); b1 = zeros(16,1); z1 = zeros(16,1);
+a2 = zeros(16,1);  w2 = zeros(16,16);  b2 = zeros(16,1); z2 = zeros(16,1);
+a3 = zeros(10,1);  w3 = zeros(10,16);  b3 = zeros(10,1); z3 = zeros(10,1);
 
 % dérivées partielles
 dCdw3 = zeros([size(w3),Nb_training]); dCda3 = zeros([size(a3),Nb_training]); dCdb3 = zeros([size(b3),Nb_training]); 
