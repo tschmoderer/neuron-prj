@@ -1,7 +1,6 @@
 % Perceptron 
 % 1 ere couche 784 neurones - input
-% 2 eme couche 16 neurones
-% 3 eme couche 10 neurones - output
+% 2 eme couche 10 neurones - output
 
 clc
 clear all
@@ -10,10 +9,10 @@ close all
 images = loadMNISTImages('data/train-images.idx3-ubyte');
 labels = loadMNISTLabels('data/train-labels.idx1-ubyte');
 
-Nb_training = 1000;
+Nb_training = 500;
 learning_rate = 0.1;
 batch_size  = 100;
-niter = 2000;
+niter = 100;
 
 training = randi([1 max(size(images))],1,Nb_training);
 lambda   = 1.;
@@ -21,55 +20,33 @@ sigmoid  = @(x) 1./(1+exp(-lambda*x));
 dsigmoid = @(x) lambda*exp(-lambda*x)./(exp(-lambda*x) + 1).^2;
 
 reference = zeros(10,1);
-% Couches          % Poids            % Biais             % Intermédiaire  
+% Couches          % Poids              % Biais          % Intermédiaire  
 a0 = zeros(784,1); 
-a1 = zeros(16,1);  w1 = zeros(16,784);  b1 = zeros(16,1); z1 = zeros(16,1);
-a2 = zeros(10,1);  w2 = zeros(10,16);   b2 = zeros(10,1); z2 = zeros(10,1);
+a1 = zeros(10,1);  w1 = zeros(10,784);  b1 = zeros(10,1); z1 = zeros(10,1);
 
 for n = 1:niter
     cost = zeros(1,Nb_training);
     % dérivées partielles
     dCdw1 = zeros([size(w1),Nb_training]); dCdb1 = zeros([length(b1),Nb_training]);
-    dCdw2 = zeros([size(w2),Nb_training]); dCdb2 = zeros([length(b2),Nb_training]);
-    
-    dCda1 = zeros(length(a1)); dCda2 = zeros(length(a2));
-    dCdz1 = zeros(length(z2)); dCdz2 = zeros(length(z2));
-    
+
     for i = 1:Nb_training
         % Données en entrée
         a0 = images(:,training(i));
 
         % première couche cachée
         z1 = w1*a0 + b1;
-        a1 = sigmoid(z1);
-        
-        % Couche de sortie 
-        z2 = w2*a1 + b2;
-        a2 = sigmoid(z2); 
-        
+        a1 = sigmoid(z1);  
+
         reference = zeros(10,1);
         reference(labels(training(i))+1) = 1; 
-        cost(i) = norm(reference - a2,2);
+        cost(i) = norm(reference - a1,2);
      
-        % Backpropagation  
-        dCda2        = 2*(a2 - reference);
-        dCdz2        = dsigmoid(z2).*dCda2;
-        
-        dCdb2(:,i)   = dCda2.*dsigmoid(z2);
-        dCdw2(:,:,i) = (ones(size(w2)).*a1').*dCdz2;
-  
-        dCda1        = sum(w2.*dCdz2)';
-        dCdz1        = dsigmoid(z1).*dCda1;
-        
-        dCdb1(:,i)   = dCda1.*dsigmoid(z1);
-        dCdw1(:,:,i) = (ones(size(w1)).*a0').*dCdz1;
-        
-%         dCdb1(:,i)   = sum(2*(w2.*dsigmoid(z1)').*(a2 - reference).*dsigmoid(z2))'; 
-%         dCdw1(:,:,1) = ((ones(size(w1)).*dsigmoid(z1)).*a0').*sum(2*w2.*(a2 - reference).*dsigmoid(z2))';
+        % Backpropagation        
+        dCdb1(:,i)   = 2*(a1 - reference).*dsigmoid(z1);
+        dCdw1(:,:,i) = ((2*ones(10,784).*(a1-reference)).*a0').*dsigmoid(z1);
     end
     
      w1 = w1 - learning_rate*mean(dCdw1,3); b1 = b1 - learning_rate*mean(dCdb1,2);
-     w2 = w2 - learning_rate*mean(dCdw2,3); b2 = b2 - learning_rate*mean(dCdb2,2);
      
      [n mean(cost)]
 end
@@ -77,13 +54,13 @@ end
 tests       = loadMNISTImages('data/t10k-images.idx3-ubyte');
 test_labels = loadMNISTLabels('data/t10k-labels.idx1-ubyte');
 
-Nb_test = 20; 
+Nb_test = 50; 
 test = randi([1 max(size(tests))],1,Nb_test);
 success = 0; devine = zeros(1,Nb_test);
 
 for i = 1:Nb_test
    a0 = tests(:,test(i));
-   guess = sigmoid(w2*sigmoid(w1*a0 + b1) + b2);
+   guess = sigmoid(w1*a0 + b1);
    
    [~ , idx] = max(guess);
    devine(i) = idx - 1;
