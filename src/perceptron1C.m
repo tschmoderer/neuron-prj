@@ -11,7 +11,7 @@ images = loadMNISTImages('data/train-images.idx3-ubyte');
 labels = loadMNISTLabels('data/train-labels.idx1-ubyte');
 
 Nb_training = 1000;
-learning_rate = 0.1;
+learning_rate = 0.001;
 batch_size  = 100;
 niter = 2000;
 
@@ -23,8 +23,8 @@ dsigmoid = @(x) lambda*exp(-lambda*x)./(exp(-lambda*x) + 1).^2;
 reference = zeros(10,1);
 % Couches          % Poids            % Biais             % Intermédiaire  
 a0 = zeros(784,1); 
-a1 = zeros(16,1);  w1 = zeros(16,784);  b1 = zeros(16,1); z1 = zeros(16,1);
-a2 = zeros(10,1);  w2 = zeros(10,16);   b2 = zeros(10,1); z2 = zeros(10,1);
+a1 = zeros(16,1);  w1 = 2*rand(16,784) - 1;  b1 = 2*rand(16,1) - 1; z1 = zeros(16,1);
+a2 = zeros(10,1);  w2 = 2*rand(10,16) - 1;   b2 = 2*rand(10,1) - 1; z2 = zeros(10,1);
 
 for n = 1:niter
     cost = zeros(1,Nb_training);
@@ -62,16 +62,13 @@ for n = 1:niter
         dCdz1        = dsigmoid(z1).*dCda1;
         
         dCdb1(:,i)   = dCda1.*dsigmoid(z1);
-        dCdw1(:,:,i) = (ones(size(w1)).*a0').*dCdz1;
-        
-%         dCdb1(:,i)   = sum(2*(w2.*dsigmoid(z1)').*(a2 - reference).*dsigmoid(z2))'; 
-%         dCdw1(:,:,1) = ((ones(size(w1)).*dsigmoid(z1)).*a0').*sum(2*w2.*(a2 - reference).*dsigmoid(z2))';
+        dCdw1(:,:,i) = (ones(size(w1)).*a0').*dCdz1;      
+
+        w1 = w1 - learning_rate*dCdw1(:,:,i); b1 = b1 - learning_rate*dCdb1(:,i);
+        w2 = w2 - learning_rate*dCdw2(:,:,i); b2 = b2 - learning_rate*dCdb2(:,i);
     end
-    
-     w1 = w1 - learning_rate*mean(dCdw1,3); b1 = b1 - learning_rate*mean(dCdb1,2);
-     w2 = w2 - learning_rate*mean(dCdw2,3); b2 = b2 - learning_rate*mean(dCdb2,2);
-     
-     [n mean(cost)]
+        
+     fprintf('Iteration : %d cout : %f \n',n,mean(cost));
 end
 
 tests       = loadMNISTImages('data/t10k-images.idx3-ubyte');

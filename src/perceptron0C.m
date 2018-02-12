@@ -9,10 +9,10 @@ close all
 images = loadMNISTImages('data/train-images.idx3-ubyte');
 labels = loadMNISTLabels('data/train-labels.idx1-ubyte');
 
-Nb_training = 500;
-learning_rate = 0.1;
+Nb_training = 3000;
+learning_rate = 0.001;
 batch_size  = 100;
-niter = 100;
+niter = 1000;
 
 training = randi([1 max(size(images))],1,Nb_training);
 lambda   = 1.;
@@ -22,7 +22,7 @@ dsigmoid = @(x) lambda*exp(-lambda*x)./(exp(-lambda*x) + 1).^2;
 reference = zeros(10,1);
 % Couches          % Poids              % Biais          % Intermédiaire  
 a0 = zeros(784,1); 
-a1 = zeros(10,1);  w1 = zeros(10,784);  b1 = zeros(10,1); z1 = zeros(10,1);
+a1 = zeros(10,1);  w1 = 2*rand(10,784) - 1;  b1 = 2*rand(10,1) - 1; z1 = zeros(10,1);
 
 for n = 1:niter
     cost = zeros(1,Nb_training);
@@ -44,17 +44,17 @@ for n = 1:niter
         % Backpropagation        
         dCdb1(:,i)   = 2*(a1 - reference).*dsigmoid(z1);
         dCdw1(:,:,i) = ((2*ones(10,784).*(a1-reference)).*a0').*dsigmoid(z1);
+        
+        w1 = w1 - learning_rate*dCdw1(:,:,i); b1 = b1 - learning_rate*dCdb1(:,i);
     end
     
-     w1 = w1 - learning_rate*mean(dCdw1,3); b1 = b1 - learning_rate*mean(dCdb1,2);
-     
-     [n mean(cost)]
+    fprintf('Iteration : %d cout : %f \n',n,mean(cost));
 end
 
 tests       = loadMNISTImages('data/t10k-images.idx3-ubyte');
 test_labels = loadMNISTLabels('data/t10k-labels.idx1-ubyte');
 
-Nb_test = 50; 
+Nb_test = 20; 
 test = randi([1 max(size(tests))],1,Nb_test);
 success = 0; devine = zeros(1,Nb_test);
 
