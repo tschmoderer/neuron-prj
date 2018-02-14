@@ -8,9 +8,12 @@ clc
 clear all
 close all  
 
-images = loadMNISTImages('data/train-images.idx3-ubyte');
-labels = loadMNISTLabels('data/train-labels.idx1-ubyte');
+images      = loadMNISTImages('data/train-images.idx3-ubyte');
+labels      = loadMNISTLabels('data/train-labels.idx1-ubyte');
+tests       = loadMNISTImages('data/t10k-images.idx3-ubyte');
+test_labels = loadMNISTLabels('data/t10k-labels.idx1-ubyte');
 
+Nb_test = 200; 
 Nb_training = 1000;
 learning_rate = 0.001;
 batch_size  = 100;
@@ -24,8 +27,11 @@ lambda   = 1.;
 f1  = @(x) 1./(1+exp(-lambda*x)); % sigmoide, activation couche 1
 df1 = @(x) lambda*exp(-lambda*x)./(exp(-lambda*x) + 1).^2;
 
-f2  = @(x) 1./(1+exp(-lambda*x)); % sigmoide, activation couche 2
+f2  = @(x) 1./(1+exp(-lambda*x)); % activation couche 2
 df2 = @(x) lambda*exp(-lambda*x)./(exp(-lambda*x) + 1).^2;
+
+fs  = @(x) x.*(x>0); % ReLU
+dfs = @(x) x>0;
 
 fs  = @(x) exp(x)/sum(exp(x(:))); %  activation couche S
 dfs = @(x) sum((ones(S) - x.*ones(S))/sum(exp(x(:))))';
@@ -92,20 +98,31 @@ for n = 1:niter
         w3 = w3 - learning_rate*dCdw3(:,:,i); b3 = b3 - learning_rate*dCdb3(:,i);
     end
     if mod(n,50) == 0
-     fprintf('Iteration : %d cout : %f \n',n,mean(cost));
+        test = randi([1 max(size(tests))],1,Nb_test);
+        success = 0; devine = zeros(1,Nb_test);
+
+        for i = 1:Nb_test
+           a0 = tests(:,test(i));
+           guess = fs(w3*f2(w2*f1(w1*a0 + b1) + b2)+ b3);
+
+           [~ , idx] = max(guess);
+           devine(i) = idx - 1;
+           if (idx - 1 == test_labels(test(i)))
+               success = success + 1;
+           end
+        end
+         fprintf('Iteration : %d3, cout : %f, réussite : %f \n',n,mean(cost),success/Nb_test);
     end
 end
 
-tests       = loadMNISTImages('data/t10k-images.idx3-ubyte');
-test_labels = loadMNISTLabels('data/t10k-labels.idx1-ubyte');
+Nb_test = 10000;
 
-Nb_test = 200; 
 test = randi([1 max(size(tests))],1,Nb_test);
 success = 0; devine = zeros(1,Nb_test);
 
 for i = 1:Nb_test
    a0 = tests(:,test(i));
-   guess = f1(w3*f1(w2*f1(w1*a0 + b1) + b2)+ b3);
+   guess = fs(w3*f2(w2*f1(w1*a0 + b1) + b2)+ b3);
    
    [~ , idx] = max(guess);
    devine(i) = idx - 1;
