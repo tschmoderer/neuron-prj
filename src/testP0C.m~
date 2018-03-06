@@ -40,7 +40,7 @@ for n = 1:niter
     cost(n) = norm(reference - a1);
     
     % Backpropagation        
-    dCdb1T = sum(2*a1 - reference.*dsigmoid(z1),2);
+    dCdb1T = 2*a1 - reference.*dsigmoid(z1);
 %    dCdw1T = ((2*ones(10,784).*(a1-reference)).*a0').*dsigmoid(z1);
 
 %    w1 = w1 - learning_rate*dCdw1; b1 = b1 - learning_rate*dCdb1;
